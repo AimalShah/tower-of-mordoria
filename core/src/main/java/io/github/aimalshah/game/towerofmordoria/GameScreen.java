@@ -1,61 +1,113 @@
 package io.github.aimalshah.game.towerofmordoria;
 
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
+import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.FillViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
-/** First screen of the application. Displayed after the application is created. */
+import static com.badlogic.gdx.Gdx.gl;
+
+
+/**
+ * First screen of the application. Displayed after the application is created.
+ */
+
 public class GameScreen implements Screen {
+
+
     final Main game;
-    private OrthographicCamera camera;
-    private TiledMap map;
-    private OrthogonalTiledMapRenderer mapRenderer;
-    Texture tileset;
+    private static final int FRAME_COLS = 6, FRAME_ROWS = 4;
 
-    private final int MAP_WIDTH = 1024;  // 32 tiles * 32 pixels
-    private final int MAP_HEIGHT = 1024;
+    private FitViewport viewport;
+    private Texture map;
+    private Texture enemyTextureSheet;
+    Animation<TextureRegion> walkAnimation;
+    private Sprite enemy;
+
+    float stateTime;
+    float enemyX=0;
 
 
+    private SpriteBatch batch;
 
 
-    public GameScreen(final Main game){
+    public GameScreen(final Main game) {
         this.game = game;
 
     }
 
     @Override
     public void show() {
-        // Prepare your screen here.
+        viewport = new FitViewport(12, 9);
 
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, 1920 / 1.5f,1080 /1.5f);
-        map = new TmxMapLoader().load("Maps/objects.tmx");
-        mapRenderer = new OrthogonalTiledMapRenderer(map, 1f);
-        tileset = new Texture("Maps/map1.png");
-        tileset.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        map = new Texture("Maps/Map1.png");
+        enemyTextureSheet = new Texture("Test/Walk/Vampires1_Walk_full.png");
+
+        TextureRegion[][] tmp = TextureRegion.split(enemyTextureSheet ,
+            enemyTextureSheet.getWidth() / FRAME_COLS,
+            enemyTextureSheet.getHeight() / FRAME_ROWS);
+
+        TextureRegion[] walkFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
+
+        int index = 0;
+
+        for(int i = 0; i<FRAME_ROWS; i++) {
+            for (int j = 0; j < FRAME_COLS; j++) {
+                walkFrames[index++] = tmp[3][j];
+            }
+        }
+
+        walkAnimation = new Animation<TextureRegion>(0.25f, walkFrames);
+        stateTime = 0f;
+
+        batch = new SpriteBatch();
+
+        enemy = new Sprite(walkFrames[0]);
+        enemy.setSize(2f,2f);
+        enemy.setPosition(0,3.5f);
+
+
+
 
     }
 
+
     @Override
     public void render(float delta) {
-        // Draw your screen here. "delta" is the time since last render in seconds.
+        gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         ScreenUtils.clear(Color.BLACK);
 
-        game.viewport.apply();
+        stateTime += Gdx.graphics.getDeltaTime();
+
+        viewport.apply();
+        batch.setProjectionMatrix(viewport.getCamera().combined);
+
+        TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);
+        enemy.setRegion(currentFrame);
+
+        enemyX += 0.5f * delta;
+        enemy.setPosition(enemyX,3.5f);
+        batch.begin();
+
+        float deltaT = Gdx.graphics.getDeltaTime();
+        float worldWidth = viewport.getWorldWidth();
+        float worldHeight = viewport.getWorldHeight();
+        batch.draw(map, 0, 0, worldWidth, worldHeight);
 
 
-        camera.position.set(MAP_WIDTH/2f, MAP_HEIGHT/2f , 0);
-        camera.update();
-        mapRenderer.setView(camera);
-        mapRenderer.render();
+        enemy.draw(batch);
+
+        batch.end();
+
+
 
 
 
@@ -63,8 +115,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
-        game.viewport.update(width, height, true);
+        viewport.update(width, height, true);
     }
 
     @Override
@@ -84,9 +135,11 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-
-
         map.dispose();
-        mapRenderer.dispose();
+        batch.dispose();
+
     }
+
+
 }
+

@@ -5,72 +5,77 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class MainMenuScreen implements Screen {
 
-    private final Main game;
-    private Stage stage;
+    private final Main game;// de ke zama sa kar neshta(ZEMOON)
+    private SpriteBatch spritebatch;
+    private ScreenViewport screenViewport;
     private Skin skin;
+    private Stage stage;
+    private Dialog dialog;
+
+
 
     public MainMenuScreen(final Main game) {
-        this.game = game;
-        stage = new Stage(new ScreenViewport());
-        Gdx.input.setInputProcessor(stage);
-
-        // Load the default skin
-        skin = new Skin(Gdx.files.internal("uiskin.json"));
-
-        // Title
-        Label.LabelStyle labelStyle = new Label.LabelStyle(new BitmapFont(), Color.WHITE);
-        Label title = new Label("Tower of Mordoria", labelStyle);
-        title.setFontScale(2.5f);
-        title.setPosition(
-            Gdx.graphics.getWidth() / 2f - title.getWidth() * 2.5f,
-            Gdx.graphics.getHeight() / 2f + 100
-        );
-        stage.addActor(title);
-
-        // Start button
-        TextButton startButton = new TextButton("Start Game", skin);
-        startButton.setSize(200, 60);
-        startButton.setPosition(
-            Gdx.graphics.getWidth() / 2f - 100,
-            Gdx.graphics.getHeight() / 2f - 30
-        );
-
-        startButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game));
-                dispose();
-            }
-        });
-
-        stage.addActor(startButton);
+       this.game = game;
     }
 
     @Override
-    public void show() {}
+    public void show() {
+        // net ke ch create ye de ke show ye
+        SpriteBatch spriteBatch = new SpriteBatch();
+        skin = new Skin(Gdx.files.internal("ui/Particle Park UI.json"));
+     screenViewport = new ScreenViewport();
+     stage = new Stage(screenViewport,spriteBatch);
+     Gdx.input.setInputProcessor(stage);
+
+
+     dialog = new Dialog("Game Menu ",skin);
+     dialog.getTitleLabel().setAlignment(Align.center);
+     Table table = dialog.getContentTable();
+     table.pad(10);
+
+     table.row();
+     table.defaults().width(150);
+     TextButton textButton=new TextButton("play",skin);
+     table.add(textButton);
+
+     table.row();
+     textButton = new TextButton("Options",skin);
+     table.add(textButton);
+
+     table.row();
+     textButton=new TextButton("Quit", skin);
+     table.add(textButton);
+     dialog.show(stage);
+
+
+    }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(0, 0, 0, 1); // Black background
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        stage.act(delta);
+        ScreenUtils.clear(Color.DARK_GRAY);
+        screenViewport.apply();
+        stage.act();
         stage.draw();
     }
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+
+    screenViewport.update(width,height,true);
+    dialog.setPosition(Math.round((stage.getWidth() - dialog.getWidth()) / 2), Math.round((stage.getHeight() - dialog.getHeight()) / 2));
+
     }
 
     @Override
@@ -84,7 +89,8 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
-        stage.dispose();
-        skin.dispose();
+       spritebatch.dispose();
+       stage.dispose();
+       skin.dispose();
     }
 }

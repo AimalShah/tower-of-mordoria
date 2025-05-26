@@ -1,31 +1,85 @@
 package io.github.aimalshah.game.towerofmordoria.enemies;
 
-
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 
 public abstract class Enemy {
-
-    protected float posX , posY;
-    protected float speed;
-    protected  int health;
-    protected  int maxHealth;
-    protected TextureRegion currentFrame;
+    protected Sprite sprite;
     protected Animation<TextureRegion> walkAnimation;
-    protected float stateTime;
+    protected float stateTime = 0f;
+    protected float x = 0f;
+    protected float y = 11f;
+    protected float health = 100f;
+    protected Texture texture;
+    protected static int FRAME_COLS = 6;
+    protected static int FRAME_ROWS = 4;
 
-    protected  boolean isDead = false;
 
-    public  Enemy(float x, float y, float speed, int maxHealth, Animation<TextureRegion> walkAnimation ){
-        this.posX = x;
-        this.posY = y;
-        this.speed = speed;
-        this.health = maxHealth;
-        this.walkAnimation = walkAnimation;
-        this.stateTime = 0f;
+    public Enemy() {
+        init();
+    }
+
+    protected void init() {
+        texture = new Texture(getTexturePath());
+        TextureRegion[][] tmp = TextureRegion.split(
+            texture,
+            texture.getWidth() / FRAME_COLS,
+            texture.getHeight() / FRAME_ROWS
+        );
+
+        TextureRegion[] walkFrames = new TextureRegion[FRAME_COLS];
+        int row = getFrameRow();
+        int index = 0;
+
+        for (int i = 0; i < FRAME_COLS; i++) {
+            walkFrames[index++] = tmp[row][i];
+        }
+
+        walkAnimation = new Animation<>(getFrameTiming(), walkFrames);
+        sprite = new Sprite(walkFrames[0]);
+        sprite.setSize(getWidth(), getHeight());
+        sprite.setPosition(x, y);
+
+
+    }
+
+    public void render(SpriteBatch batch) {
+        sprite.draw(batch);
     }
 
 
+    public void update(float delta) {
+        stateTime += delta;
+        TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);
+        sprite.setRegion(currentFrame);
+        x += 2.5f * delta;
+        sprite.setPosition(x, y);
+    }
 
+    public void dispose() {
+        texture.dispose();
+    }
+
+    public float getX() {
+        return sprite.getX();
+    }
+
+    public Vector2 getPosition() {
+        return new Vector2(getX(), y);
+    }
+
+    protected abstract String getTexturePath();
+
+    protected abstract int getFrameRow();
+
+    protected abstract float getFrameTiming();
+
+    protected abstract float getWidth();
+
+    protected abstract float getHeight();
 
 }

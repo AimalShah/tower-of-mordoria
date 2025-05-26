@@ -2,16 +2,30 @@ package io.github.aimalshah.game.towerofmordoria;
 
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Animation;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.aimalshah.game.towerofmordoria.enemies.Enemy;
+import io.github.aimalshah.game.towerofmordoria.enemies.Orc;
+import io.github.aimalshah.game.towerofmordoria.towers.TowerManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.badlogic.gdx.Gdx.gl;
 
@@ -24,19 +38,27 @@ public class GameScreen implements Screen {
 
 
     final Main game;
-    private static final int FRAME_COLS = 6, FRAME_ROWS = 4;
 
     private FitViewport viewport;
+    private ScreenViewport uiViewPort;
+
     private Texture map;
-    private Texture enemyTextureSheet;
-    Animation<TextureRegion> walkAnimation;
-    private Sprite enemy;
-
-    float stateTime;
-    float enemyX=0;
-
 
     private SpriteBatch batch;
+    private List<Enemy> enemies;
+    private float spawnTimer = 0f;
+    private final float spawnInterval = 1f;
+    private final int maximumEnemies = 5;
+    private int enemiesSpawned = 0;
+    private TowerManager towerManager;
+    private Texture towerTexture;
+    private ShapeRenderer shapeRenderer;
+
+    private BitmapFont font;
+    private Stage uiStage;
+    private Skin skin;
+    private Label towerLabel;
+    private TextButton selectTowerButton;
 
 
     public GameScreen(final Main game) {
@@ -46,71 +68,125 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        viewport = new FitViewport(12, 9);
+        viewport = new FitViewport(36, 24);
 
-        map = new Texture("Maps/Map1.png");
-        enemyTextureSheet = new Texture("Test/Walk/Vampires1_Walk_full.png");
-
-        TextureRegion[][] tmp = TextureRegion.split(enemyTextureSheet ,
-            enemyTextureSheet.getWidth() / FRAME_COLS,
-            enemyTextureSheet.getHeight() / FRAME_ROWS);
-
-        TextureRegion[] walkFrames = new TextureRegion[FRAME_COLS * FRAME_ROWS];
-
-        int index = 0;
-
-        for(int i = 0; i<FRAME_ROWS; i++) {
-            for (int j = 0; j < FRAME_COLS; j++) {
-                walkFrames[index++] = tmp[3][j];
-            }
-        }
-
-        walkAnimation = new Animation<TextureRegion>(0.25f, walkFrames);
-        stateTime = 0f;
-
+        map = new Texture("Maps/map.png");
         batch = new SpriteBatch();
 
-        enemy = new Sprite(walkFrames[0]);
-        enemy.setSize(2f,2f);
-        enemy.setPosition(0,3.5f);
+        enemies = new ArrayList<>();
 
-
-
+        towerTexture = new Texture("archer_tower.png");
+        towerManager = new TowerManager(towerTexture);
+        shapeRenderer = new ShapeRenderer();
 
     }
 
 
     @Override
     public void render(float delta) {
+
+        input();
+        draw();
+        logic(delta);
+
+
+    }
+
+    private void input() {
+        if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+            towerManager.startPlacing();
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.Q)) {
+            towerManager.cancelPlacing();
+        }
+
+    }
+
+    private void logic(float delta) {
+
+        if(enemiesSpawned == maximumEnemies){
+            if(enemies.isEmpty()){
+                this.game.setScreen(new GameOverScreen(game));
+            }
+        }
+        //Enemy Logic
+        if (enemiesSpawned < maximumEnemies) {
+            spawnTimer += delta;
+            if (spawnTimer >= spawnInterval) {
+                spawnEnemy();
+                spawnTimer = 0;
+            }
+        }
+
+        for(int i = 0; i < enemies.size(); i++){
+            Enemy enemy = enemies.get(i);
+
+            if(enemy.getX() > viewport.getWorldWidth()){
+                game.setScreen(new GameOverScreen(game));
+            }
+        }
+
+        for (Enemy enemy : enemies) {
+            enemy.update(delta);
+        }
+
+
+        //Tower Logic
+        if (towerManager.isPlacing()) {
+            Vector2 screenTouch = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+            Vector2 worldTouch = viewport.unproject(screenTouch);
+            towerManager.updatePreviewPosition(worldTouch);
+
+            if (Gdx.input.justTouched()) {
+                towerManager.handleInput(worldTouch);
+            }
+        }
+        towerManager.update(delta , enemies);
+
+
+    }
+
+    private void draw() {
         gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         ScreenUtils.clear(Color.BLACK);
-
-        stateTime += Gdx.graphics.getDeltaTime();
 
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
 
-        TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);
-        enemy.setRegion(currentFrame);
-
-        enemyX += 0.5f * delta;
-        enemy.setPosition(enemyX,3.5f);
+        //Batch Begin
         batch.begin();
 
-        float deltaT = Gdx.graphics.getDeltaTime();
         float worldWidth = viewport.getWorldWidth();
         float worldHeight = viewport.getWorldHeight();
         batch.draw(map, 0, 0, worldWidth, worldHeight);
 
 
-        enemy.draw(batch);
+        towerManager.render(batch);
+
+
+        for (Enemy enemy : enemies) {
+            enemy.render(batch);
+        }
+
+
+
 
         batch.end();
 
+        shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        towerManager.renderRanges(shapeRenderer);
+        shapeRenderer.end();
+        //Batch End
+
+    }
 
 
-
-
+    private void spawnEnemy() {
+        Enemy enemy = new Orc();
+        enemies.add(enemy);
+        enemiesSpawned++;
     }
 
     @Override
@@ -125,18 +201,25 @@ public class GameScreen implements Screen {
 
     @Override
     public void resume() {
-        // Invoked when your application is resumed after pause.
+
     }
 
     @Override
     public void hide() {
-        // This method is called when another screen replaces this one.
+
     }
 
     @Override
     public void dispose() {
         map.dispose();
         batch.dispose();
+        for (Enemy enemy : enemies) {
+            enemy.dispose();
+        }
+        towerTexture.dispose();
+        shapeRenderer.dispose();
+        shapeRenderer.dispose();
+
 
     }
 

@@ -55,9 +55,14 @@ public abstract class Tower {
             p.update(delta);
             if (p.hasHitTarget()) {
                 System.out.println("The Enemy Has Been Hit.");
-                p.getTarget().dispose();
-                enemies.remove(p.getTarget());
+                p.getTarget().takeDamage(10);
+
+                if(p.getTarget().isDead()){
+                    p.getTarget().dispose();
+                    enemies.remove(p.getTarget());
+                }
                 projectiles.remove(i);
+                i--;
             }
         }
     }

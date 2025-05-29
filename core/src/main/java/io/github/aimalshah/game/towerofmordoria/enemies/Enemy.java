@@ -72,6 +72,16 @@ public abstract class Enemy {
         return new Vector2(getX(), y);
     }
 
+    public  void takeDamage(int amount){
+        health -= amount;
+        if(health <= 60){
+            dispose();
+        }
+    }
+
+    public boolean isDead(){
+        return health <= 60;
+    }
     protected abstract String getTexturePath();
 
     protected abstract int getFrameRow();

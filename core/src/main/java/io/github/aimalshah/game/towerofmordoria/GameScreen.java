@@ -30,9 +30,7 @@ import java.util.List;
 import static com.badlogic.gdx.Gdx.gl;
 
 
-/**
- * First screen of the application. Displayed after the application is created.
- */
+
 
 public class GameScreen implements Screen {
 

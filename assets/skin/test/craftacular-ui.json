@@ -1,0 +1,150 @@
+{
+  "com.badlogic.gdx.graphics.g2d.BitmapFont": {
+    "bold": { "file": "font-bold-export.fnt" },
+    "font": { "file": "font-export.fnt" },
+    "title": { "file": "font-title-export.fnt" }
+  },
+
+  "com.badlogic.gdx.graphics.Color": {
+    "wood-dark": { "r": 0.36, "g": 0.25, "b": 0.18, "a": 1 },
+    "wood-medium": { "r": 0.54, "g": 0.39, "b": 0.26, "a": 1 },
+    "wood-light": { "r": 0.73, "g": 0.58, "b": 0.42, "a": 1 },
+    "accent-gold": { "r": 0.86, "g": 0.72, "b": 0.28, "a": 1 },
+    "white": { "r": 1, "g": 1, "b": 1, "a": 1 }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable": {
+    "button-woody": { "name": "button", "color": "wood-medium" },
+    "button-hover-woody": { "name": "button-hover", "color": "wood-light" }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle": {
+    "default": {
+      "up": "button-woody",
+      "over": "button-hover-woody",
+      "disabled": "button-disabled"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle": {
+    "default": {
+      "up": "button-woody",
+      "over": "button-hover-woody",
+      "disabled": "button-disabled"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton$ImageTextButtonStyle": {
+    "default": {
+      "font": "font",
+      "up": "button-woody",
+      "over": "button-hover-woody",
+      "disabled": "button-disabled"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle": {
+    "default": {
+      "font": "font",
+      "fontColor": "wood-light"
+    },
+    "dim": {
+      "font": "font",
+      "fontColor": "wood-medium"
+    },
+    "bold": {
+      "font": "bold",
+      "background": "underline"
+    },
+    "title": {
+      "font": "title",
+      "fontColor": "accent-gold"
+    },
+    "xp": {
+      "font": "bold",
+      "fontColor": "accent-gold"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle": {
+    "default-horizontal": {
+      "background": "slider",
+      "knobBefore": "slider-knob"
+    },
+    "default-vertical": {
+      "background": "slider",
+      "knob": "slider-knob"
+    },
+    "hunger": {
+      "background": "meat-bg",
+      "knobAfter": "meat"
+    },
+    "health": {
+      "background": "heart-bg",
+      "knobBefore": "accent-gold"
+    },
+    "xp": {
+      "background": "xp-bg",
+      "knobBefore": "xp"
+    },
+    "armor": {
+      "background": "armor-bg",
+      "knobBefore": "armor"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.ScrollPane$ScrollPaneStyle": {
+    "default": {
+      "background": "scroll-bg",
+      "hScroll": "scroll-horizontal",
+      "hScrollKnob": "scroll-knob-horizontal",
+      "vScroll": "scroll-vertical",
+      "vScrollKnob": "scroll-knob-vertical"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle": {
+    "default-horizontal": {
+      "background": "slider",
+      "knob": "slider-knob"
+    },
+    "default-vertical": {
+      "background": "slider",
+      "knob": "slider-knob"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle": {
+    "default": {
+      "font": "font",
+      "up": "button-woody",
+      "over": "button-hover-woody",
+      "disabled": "button-disabled"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle": {
+    "default": {
+      "font": "font",
+      "fontColor": "wood-light",
+      "background": "text-field",
+      "cursor": "accent-gold",
+      "selection": "wood-medium"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.TextTooltip$TextTooltipStyle": {
+    "default": {
+      "label": "default",
+      "background": "wood-dark"
+    }
+  },
+
+  "com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle": {
+    "default": {
+      "background": "window",
+      "titleFont": "font",
+      "titleFontColor": "accent-gold"
+    }
+  }
+}

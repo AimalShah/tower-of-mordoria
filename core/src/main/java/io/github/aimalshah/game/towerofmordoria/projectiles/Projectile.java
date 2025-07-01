@@ -8,7 +8,7 @@ import io.github.aimalshah.game.towerofmordoria.enemies.Enemy;
 public class Projectile {
     private Vector2 position;
     private Vector2 targetPosition;
-    private float speed = 10f;
+    private float speed = 40f;
     private Texture texture;
     private Enemy target;
 
@@ -43,4 +43,6 @@ public class Projectile {
     public void dispose(){
         texture.dispose();
     }
+
+    public void setSpeed(float speed){this.speed = speed;}
 }

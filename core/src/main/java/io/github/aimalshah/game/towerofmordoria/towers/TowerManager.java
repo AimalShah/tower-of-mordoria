@@ -1,5 +1,6 @@
 package io.github.aimalshah.game.towerofmordoria.towers;
 
+
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -11,8 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TowerManager {
+
     private List<Tower> towers = new ArrayList<>();
     private Texture towerTexture;
+    private String type;
 
     private boolean placing = false;
     private Vector2 previewPosition = new Vector2();
@@ -20,8 +23,9 @@ public class TowerManager {
 
 
 
-    public  TowerManager(Texture towerTexture){
+    public  TowerManager(Texture towerTexture , String type){
         this.towerTexture = towerTexture;
+        this.type = type;
     }
 
     public void update(float delta , List<Enemy> enemies){
@@ -36,14 +40,11 @@ public class TowerManager {
         }
 
         if(placing){
-            batch.draw(new Texture("placement_tower.png"), previewPosition.x, previewPosition.y , 1,2);
+            batch.draw(towerTexture, previewPosition.x, previewPosition.y , 1,2);
         }
     }
 
     public void renderRanges( ShapeRenderer shapeRenderer) {
-        for(Tower tower : towers) {
-            tower.renderRange(shapeRenderer);
-        }
 
         if(placing){
             shapeRenderer.setColor(Color.RED);
@@ -52,7 +53,14 @@ public class TowerManager {
     }
 
     public void placeTower(float x , float y){
-        towers.add(new ArcherTower(towerTexture, x,y));
+        if(type.equals("Archer")){
+            towers.add(new ArcherTower(x,y,30));
+        }
+
+        if(type.equals("Wizard")){
+            towers.add(new WizardTower(x,y,50));
+        }
+
         placing = false;
     }
 

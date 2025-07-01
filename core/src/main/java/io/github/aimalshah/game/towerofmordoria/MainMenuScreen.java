@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
+import io.github.aimalshah.game.towerofmordoria.databasemanager.DBConnection.DBConnection;
 
 public class MainMenuScreen implements Screen {
 
@@ -36,7 +37,7 @@ public class MainMenuScreen implements Screen {
         screenViewport = new ScreenViewport();
         stage = new Stage(screenViewport, spriteBatch);
         Gdx.input.setInputProcessor(stage);
-        background = new Texture(Gdx.files.internal("background_menu_image.png"));
+        background = new Texture(Gdx.files.internal("main_image.png"));
 
 
         dialog = new Dialog("Game Menu ", skin);
@@ -45,18 +46,31 @@ public class MainMenuScreen implements Screen {
         table.pad(10);
 
         table.row();
-        table.defaults().width(150);
-        TextButton playButton = new TextButton("play", skin);
+        table.defaults().width(250);
+        TextButton playButton = new TextButton("Load Game", skin);
         playButton.addListener(new ClickListener() {
             public  void clicked(InputEvent event, float x, float y){
-                game.setScreen(new GameScreen(game));
+                game.setScreen(new UserScreen(game));
             }
         });
 
-        table.add(playButton);
+        TextButton textButton = new TextButton("Options", skin);
+        TextButton newGameButton = new TextButton("New Game" , skin);
+        newGameButton.addListener(new ClickListener(){
+            public  void clicked(InputEvent event, float x, float y){
+                game.setScreen(new ProfileScreen(game));
+            }
+        });
+
+
+        table.add(newGameButton);
 
         table.row();
-        TextButton textButton = new TextButton("Options", skin);
+
+
+
+        table.add(playButton);
+        table.row();
         table.add(textButton);
 
         table.row();
@@ -67,6 +81,7 @@ public class MainMenuScreen implements Screen {
            }
        });
         table.add(quitButton);
+
         dialog.show(stage);
 
 

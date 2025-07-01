@@ -1,5 +1,7 @@
 package io.github.aimalshah.game.towerofmordoria.towers;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
@@ -20,29 +22,31 @@ public abstract class Tower {
     protected Animation<TextureRegion> animation;
     protected float stateTime;
     protected float x, y;
+    protected  int damage;
     protected float range = 5f;
     protected float fireCoolDown = 1.0f;
     protected float fireTimer = 0f;
     protected List<Projectile> projectiles = new ArrayList<>();
+    protected Sound hitSound  = Gdx.audio.newSound(Gdx.files.internal("sounds/arrow-sound.mp3"));
 
 
-    public Tower(Animation<TextureRegion> animation, float x, float y) {
-        this.animation = animation;
+    public Tower(String towerTexture, float x, float y , int damage) {
         this.position = new Vector2(x, y);
         this.stateTime = 0f;
-        this.sprite = new Sprite(animation.getKeyFrame(0, true));
+        this.sprite = new Sprite(new Texture(towerTexture));
         this.sprite.setPosition(x, y);
         this.sprite.setSize(1f, 2f);
+        this.damage = damage;
     }
 
     public void update(float delta , List<Enemy> enemies) {
         stateTime += delta;
-        TextureRegion currentFrame = animation.getKeyFrame(stateTime, true);
         fireTimer += delta;
 
         if(fireTimer >= fireCoolDown){
             for(Enemy enemy : enemies){
                 if(isInRange(enemy.getPosition())){
+                    hitSound.play();
                     projectiles.add(new Projectile(new Vector2(position.x, position.y + sprite.getHeight()/2), enemy));
                     fireTimer = 0;
                     break;
@@ -55,7 +59,7 @@ public abstract class Tower {
             p.update(delta);
             if (p.hasHitTarget()) {
                 System.out.println("The Enemy Has Been Hit.");
-                p.getTarget().takeDamage(10);
+                p.getTarget().takeDamage(damage);
 
                 if(p.getTarget().isDead()){
                     p.getTarget().dispose();

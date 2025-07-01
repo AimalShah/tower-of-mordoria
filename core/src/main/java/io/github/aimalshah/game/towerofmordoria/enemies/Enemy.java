@@ -13,7 +13,7 @@ public abstract class Enemy {
     protected float stateTime = 0f;
     protected float x = 0f;
     protected float y = 11f;
-    protected float health = 100f;
+    public float health = 100f;
     protected Texture texture;
     protected static int FRAME_COLS = 6;
     protected static int FRAME_ROWS = 4;
@@ -56,7 +56,7 @@ public abstract class Enemy {
         stateTime += delta;
         TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);
         sprite.setRegion(currentFrame);
-        x += 2.5f * delta;
+        x += 4.5f * delta;
         sprite.setPosition(x, y);
     }
 
@@ -74,13 +74,13 @@ public abstract class Enemy {
 
     public  void takeDamage(int amount){
         health -= amount;
-        if(health <= 60){
+        if(health <= 0){
             dispose();
         }
     }
 
     public boolean isDead(){
-        return health <= 60;
+        return health <= 0;
     }
     protected abstract String getTexturePath();
 

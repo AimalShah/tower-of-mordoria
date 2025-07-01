@@ -62,7 +62,7 @@ public class GameOverScreen implements Screen {
         TextButton RestartBtn = new TextButton("Restart", skin);
         RestartBtn.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                game.setScreen(new GameScreen(game));
+
             }
         });
         table.add(RestartBtn);

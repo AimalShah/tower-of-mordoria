@@ -1,6 +1,14 @@
 package io.github.aimalshah.game.towerofmordoria.enemies;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
+
 public class Orc extends Enemy{
+
+
+    public Orc(){
+        this.health = 30;
+        this.speed = 2.5f;
+    }
 
     @Override
     protected  String getTexturePath() {

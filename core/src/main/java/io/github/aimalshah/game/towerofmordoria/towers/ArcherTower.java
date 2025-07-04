@@ -8,6 +8,8 @@ public class ArcherTower extends Tower {
 
     public ArcherTower(float x, float y, int damage) {
         super("placement_tower.png", x, y, damage);
+        this.range = 5f;
+        this.reward = 10;
     }
 
 }

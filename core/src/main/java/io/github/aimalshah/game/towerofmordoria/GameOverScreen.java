@@ -17,10 +17,16 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import io.github.aimalshah.game.towerofmordoria.databasemanager.DBConnection.DAL;
+import io.github.aimalshah.game.towerofmordoria.databasemanager.DBConnection.User;
+
+import java.sql.SQLException;
 
 public class GameOverScreen implements Screen {
 
     final Main game;
+    int id;
+    int score;
     private SpriteBatch batch;
     private BitmapFont font;
     private GlyphLayout layout;
@@ -30,18 +36,32 @@ public class GameOverScreen implements Screen {
     private Dialog dialog;
     private ScreenViewport screenViewport;
     private Texture backgorund;
+    DAL db = new DAL();
 
-    public GameOverScreen(final Main game) {
+    public GameOverScreen(final Main game , int id , int score) {
+        this.id = id;
+        this.score = score;
         this.game = game;
     }
 
     @Override
     public void show() {
+        try {
+            User user = db.getUserById(id);
+
+            if(score > user.getHighScore()){
+                db.updateHighScore(id , score);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         batch = new SpriteBatch();
         screenViewport = new ScreenViewport();
         stage = new Stage(screenViewport, batch);
         Gdx.input.setInputProcessor(stage);
         backgorund = new Texture(Gdx.files.internal("background_gameover_image.png"));
+
+
 
         skin = new Skin(Gdx.files.internal("skin/craftacular-ui.json"));
         dialog = new Dialog("Game Over", skin);
@@ -59,15 +79,6 @@ public class GameOverScreen implements Screen {
         });
         table.add(MenuBtn);
         table.row();
-        TextButton RestartBtn = new TextButton("Restart", skin);
-        RestartBtn.addListener(new ClickListener() {
-            public void clicked(InputEvent event, float x, float y) {
-
-            }
-        });
-        table.add(RestartBtn);
-        table.row();
-
         TextButton QuitBtn = new TextButton("Quit", skin);
         QuitBtn.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {

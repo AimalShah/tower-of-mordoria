@@ -39,6 +39,30 @@ public class DAL {
         }
     }
 
+    public  User getUserById(int id) throws SQLException {
+        String query = "SELECT * FROM user WHERE id = " + id;
+        try (Connection conn = DBConnection.getConnection();
+        ) {
+            assert conn != null;
+            try (Statement stmt = conn.createStatement();
+                 ResultSet rs = stmt.executeQuery(query);
+            ) {
+
+                return new User(
+                    rs.getInt("id"),
+                    rs.getString("username"),
+                    rs.getString("avatar"),
+                    rs.getInt("high_score")
+                );
+            } catch (SQLException e) {
+                System.out.println("ERROR : " + e);
+            }
+
+        }
+
+        return  null;
+    }
+
     public ArrayList<User> getAllUsers(){
         String query = "SELECT * FROM user";
         try(Connection conn = DBConnection.getConnection();

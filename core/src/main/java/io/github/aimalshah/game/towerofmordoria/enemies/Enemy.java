@@ -17,7 +17,7 @@ public abstract class Enemy {
     protected Texture texture;
     protected static int FRAME_COLS = 6;
     protected static int FRAME_ROWS = 4;
-
+    protected  float speed = 2.5f;
 
     public Enemy() {
         init();
@@ -56,7 +56,7 @@ public abstract class Enemy {
         stateTime += delta;
         TextureRegion currentFrame = walkAnimation.getKeyFrame(stateTime, true);
         sprite.setRegion(currentFrame);
-        x += 4.5f * delta;
+        x +=  speed * delta;
         sprite.setPosition(x, y);
     }
 

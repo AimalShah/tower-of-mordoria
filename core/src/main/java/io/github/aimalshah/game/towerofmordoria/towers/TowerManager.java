@@ -16,9 +16,9 @@ public class TowerManager {
     private List<Tower> towers = new ArrayList<>();
     private Texture towerTexture;
     private String type;
-
     private boolean placing = false;
     private Vector2 previewPosition = new Vector2();
+    private EnemyKillListner killListener;
 
 
 
@@ -33,6 +33,9 @@ public class TowerManager {
             tower.update(delta, enemies);
         }
     }
+    public void setKillListener(EnemyKillListner listener) {
+        this.killListener = listener;
+    }
 
     public void render(SpriteBatch batch){
         for(Tower tower : towers){
@@ -44,21 +47,28 @@ public class TowerManager {
         }
     }
 
-    public void renderRanges( ShapeRenderer shapeRenderer) {
+    public void renderRanges( ShapeRenderer shapeRenderer , float range) {
 
         if(placing){
             shapeRenderer.setColor(Color.RED);
-            shapeRenderer.circle(previewPosition.x + 0.5f, previewPosition.y + 1, 5f);
+            shapeRenderer.circle(previewPosition.x + 0.5f, previewPosition.y + 1, range);
         }
     }
 
     public void placeTower(float x , float y){
-        if(type.equals("Archer")){
-            towers.add(new ArcherTower(x,y,30));
+        Tower tower = null;
+
+        if (type.equals("Archer")) {
+            tower = new ArcherTower(x, y, 5);
+        } else if (type.equals("Wizard")) {
+            tower = new WizardTower(x, y, 15);
         }
 
-        if(type.equals("Wizard")){
-            towers.add(new WizardTower(x,y,50));
+        if (tower != null) {
+            if (killListener != null) {
+                tower.setKillListener(killListener);
+            }
+            towers.add(tower);
         }
 
         placing = false;

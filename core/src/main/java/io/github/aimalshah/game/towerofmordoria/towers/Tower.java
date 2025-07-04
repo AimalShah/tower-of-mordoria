@@ -16,6 +16,8 @@ import io.github.aimalshah.game.towerofmordoria.projectiles.Projectile;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 public abstract class Tower {
     protected Sprite sprite;
     protected Vector2 position;
@@ -24,11 +26,12 @@ public abstract class Tower {
     protected float x, y;
     protected  int damage;
     protected float range = 5f;
-    protected float fireCoolDown = 1.0f;
+    protected float fireCoolDown = 2f;
     protected float fireTimer = 0f;
     protected List<Projectile> projectiles = new ArrayList<>();
     protected Sound hitSound  = Gdx.audio.newSound(Gdx.files.internal("sounds/arrow-sound.mp3"));
-
+    protected int reward;
+    protected EnemyKillListner enemyKillListner;
 
     public Tower(String towerTexture, float x, float y , int damage) {
         this.position = new Vector2(x, y);
@@ -58,12 +61,14 @@ public abstract class Tower {
             Projectile p = projectiles.get(i);
             p.update(delta);
             if (p.hasHitTarget()) {
-                System.out.println("The Enemy Has Been Hit.");
                 p.getTarget().takeDamage(damage);
 
                 if(p.getTarget().isDead()){
                     p.getTarget().dispose();
                     enemies.remove(p.getTarget());
+                    if(enemyKillListner != null){
+                        enemyKillListner.onEnemyKilled(10);
+                    }
                 }
                 projectiles.remove(i);
                 i--;
@@ -106,6 +111,10 @@ public abstract class Tower {
         float CenterY = position.y + sprite.getHeight()/2;
 
         return CenterX != 0 && CenterY != 0 && enemyPos.dst(CenterX, CenterY) <= getRange();
+    }
+
+    public void setKillListener(EnemyKillListner listener) {
+        this.enemyKillListner = listener;
     }
 
 }

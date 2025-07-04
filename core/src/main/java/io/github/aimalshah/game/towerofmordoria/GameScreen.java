@@ -6,7 +6,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -22,9 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Null;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -42,6 +39,7 @@ import static com.badlogic.gdx.Gdx.gl;
 import static com.badlogic.gdx.Gdx.graphics;
 
 
+
 public class GameScreen implements Screen {
 
 
@@ -49,6 +47,7 @@ public class GameScreen implements Screen {
     String username;
     String avatar;
     int high_score;
+    int score;
     int id;
     int points = 200;
 
@@ -59,7 +58,7 @@ public class GameScreen implements Screen {
     private List<Enemy> enemies;
     private float spawnTimer = 0f;
     private final float spawnInterval = 1f;
-    private final int maximumEnemies = 5;
+    private int maximumEnemies = 5;
     private int enemiesSpawned = 0;
     private TowerManager archerTowerManager;
     private TowerManager wizardTowerManger;
@@ -72,11 +71,13 @@ public class GameScreen implements Screen {
     private TextButton selectTowerButton;
     private Boolean isWaveStart = false;
     private int currentWave = 1;
-    private int totalWaves = 5;
-    private int playerHelath = 100;
+    private int totalWaves = 6;
+    private int playerHealth = 100;
     private ProgressBar playerHealthBar;
-    private Dialog dialog;
-
+    private Label currencyPoints;
+    private Label waveLabel;
+    private Label scoreLabel;
+    private  TextButton startWaveBtn;
 
     public GameScreen(final Main game, String username, String avatar, int id, int high_score) {
 
@@ -114,13 +115,23 @@ public class GameScreen implements Screen {
 
         archerTowerManager = new TowerManager(new Texture("placement_tower.png"), "Archer");
         wizardTowerManger = new TowerManager(new Texture("placement_wizard_tower.png"), "Wizard");
+        archerTowerManager.setKillListener(reward -> {
+            points += reward;
+            score += reward;
+
+        });
+        wizardTowerManger.setKillListener(reward -> {
+            points += reward;
+            score += reward;
+        });
+
 
         shapeRenderer = new ShapeRenderer();
 
         ImageButton archerTowerBtn = new ImageButton(archerTowerDrawable);
         ImageButton wizardTowerBtn = new ImageButton(wizardTowerDrawable);
 
-        TextButton startWaveBtn = new TextButton("Start Wave", skin);
+         startWaveBtn = new TextButton("Start Wave", skin);
 
 
         ProgressBar.ProgressBarStyle style = skin.get("default-horizontal", ProgressBar.ProgressBarStyle.class);
@@ -132,23 +143,29 @@ public class GameScreen implements Screen {
         TextureRegionDrawable drawable = new TextureRegionDrawable(new TextureRegion(avatarTexture));
         ImageButton avatarImage = new ImageButton(drawable);
         avatarImage.setSize(1, 1);
-
+         currencyPoints = new Label("" + points, skin);
         Image currencyImage = new Image(new Texture(Gdx.files.internal("diamond.png")));
         currencyImage.setSize(1.1f, 1.1f);
 
         playerHealthBar = new ProgressBar(0f, 100f, 10f, false, skin);
-        playerHealthBar.setValue(playerHelath); // current health
+        playerHealthBar.setValue(playerHealth); // current health
         playerHealthBar.setAnimateDuration(0.25f);
         playerHealthBar.setStyle(style);
 
         archerTowerBtn.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                archerTowerManager.startPlacing();
+                if(points >= 50){
+                    archerTowerManager.startPlacing();
+                    points = points - 50;
+                }
             }
         });
         wizardTowerBtn.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
-                wizardTowerManger.startPlacing();
+                if(points >= 100) {
+                    wizardTowerManger.startPlacing();
+                    points = points - 100;
+                }
             }
         });
 
@@ -185,10 +202,11 @@ public class GameScreen implements Screen {
         startWaveBtn.addListener(new ClickListener() {
             public void clicked(InputEvent event, float x, float y) {
                 isWaveStart = true;
-                startWaveBtn.remove();
+                startWaveBtn.setVisible(false);
             }
         });
-
+        waveLabel = new Label("WAVE : " + currentWave + " / " + totalWaves , skin);
+        scoreLabel = new Label("SCORE: 0", skin);
 
         Table tableTop = new Table(skin);
         Table tableBottom = new Table(skin);
@@ -197,7 +215,9 @@ public class GameScreen implements Screen {
 
         tableTopRight.setFillParent(true);
         tableTopRight.pad(4);
-        tableTopRight.add(new Label("HIGH SCORE : " + high_score,skin));
+        tableTopRight.add(scoreLabel).right().pad(4);
+        tableTopRight.row();
+        tableTopRight.add(waveLabel).pad(4);
         tableTopRight.top().right();
 
 
@@ -210,7 +230,7 @@ public class GameScreen implements Screen {
         tableTop.add(userNameLabel).width(100).left().pad(0).space(0);
         tableTop.row();
         tableTop.add(currencyImage).size(80, 80).left().padBottom(2).padTop(2).pad(0).space(0);
-        tableTop.add(new Label("" + points, skin)).left().space(0);
+        tableTop.add(currencyPoints).left().space(0);
         tableTop.row();
         tableTop.add(playerHealthBar).size(260, 20).pad(0).colspan(2);
 
@@ -258,30 +278,34 @@ public class GameScreen implements Screen {
 
     private void logic(float delta) {
 
-        if (enemiesSpawned == maximumEnemies) {
-            if (enemies.isEmpty()) {
-                this.game.setScreen(new GameOverScreen(game));
-            }
+        if(playerHealth <= 0){
+            game.setScreen(new GameOverScreen(game, id ,score));
         }
 
         if (isWaveStart) {
             startWave(delta);
         }
 
+        waveLabel.setText("WAVE : " + currentWave + " / " + totalWaves);
+        scoreLabel.setText("SCORE : " + score);
+
+
         Iterator<Enemy> iterator = enemies.iterator();
         while (iterator.hasNext()) {
             Enemy enemy = iterator.next();
             if (enemy.getX() > viewport.getWorldWidth()) {
-                playerHelath = Math.max(0, playerHelath - 20);
-                playerHealthBar.setValue(playerHelath);
+                playerHealth = Math.max(0, playerHealth - 15);
+                playerHealthBar.setValue(playerHealth);
                 enemy.dispose();
                 iterator.remove();
             }
         }
 
+
         for (Enemy enemy : enemies) {
             enemy.update(delta);
         }
+
 
 
         //Tower Logic
@@ -316,7 +340,7 @@ public class GameScreen implements Screen {
 
         viewport.apply();
         batch.setProjectionMatrix(viewport.getCamera().combined);
-
+        currencyPoints.setText(""+points);
         //Batch Begin
         batch.begin();
         float worldWidth = viewport.getWorldWidth();
@@ -335,8 +359,8 @@ public class GameScreen implements Screen {
 
         shapeRenderer.setProjectionMatrix(viewport.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        archerTowerManager.renderRanges(shapeRenderer);
-        wizardTowerManger.renderRanges(shapeRenderer);
+        archerTowerManager.renderRanges(shapeRenderer , 5f);
+        wizardTowerManger.renderRanges(shapeRenderer , 7f);
         shapeRenderer.end();
 
         uiStage.act(graphics.getDeltaTime());
@@ -345,17 +369,43 @@ public class GameScreen implements Screen {
     }
 
     private void startWave(float delta) {
-        if (enemiesSpawned < maximumEnemies) {
-            spawnTimer += delta;
-            if (spawnTimer >= spawnInterval) {
+        if(enemiesSpawned < maximumEnemies){
+            spawnTimer += delta + 0.05f;
+            if(spawnTimer >= spawnInterval){
                 spawnEnemy();
                 spawnTimer = 0;
             }
+        } else if(enemies.isEmpty()){
+            startWaveBtn.setVisible(true);
+            isWaveStart = false;
+            currentWave++;
+
+            if(currentWave > totalWaves){
+                game.setScreen(new VictoryScreen(game , id , score));
+            } else {
+                enemiesSpawned = 0;
+                spawnTimer = 0;
+                 maximumEnemies += 3 + currentWave;
+                 points += 50;
+            }
+
+
         }
+
     }
 
     private void spawnEnemy() {
-        Enemy enemy = new Vampire();
+        Enemy enemy;
+
+        double roll = Math.random();
+        if(currentWave <= 2){
+            enemy = new Orc();
+        } else if(currentWave < 5){
+            enemy = roll < 0.5 ? new Vampire() : new Orc();
+        } else {
+            enemy = roll < 0.3 ? new Vampire() : new Orc();
+        }
+
         enemies.add(enemy);
         enemiesSpawned++;
     }
